@@ -24,11 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Logo256.png" />
     <None Remove="VirtualDesktop.FaceTracking.csproj.vspscc" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\..\..\Art\Logo256.png" Link="Resources\Logo256.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,13 +33,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="VRCFaceTracking.Core">
       <HintPath>3rdParty\VRCFaceTracking.Core.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\Logo256.png" />
   </ItemGroup>
 
   <ItemGroup>
