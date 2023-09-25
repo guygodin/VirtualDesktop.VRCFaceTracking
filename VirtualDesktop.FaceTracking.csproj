@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Globals">
+    <SccProjectName>SAK</SccProjectName>
+    <SccProvider>SAK</SccProvider>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <Copyright>Copyright © Virtual Desktop, Inc. 2014-2023</Copyright>
+    <PackageProjectUrl>https://www.vrdesktop.net</PackageProjectUrl>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="3rdParty\**" />
+    <EmbeddedResource Remove="3rdParty\**" />
+    <None Remove="3rdParty\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="VirtualDesktop.FaceTracking.csproj.vspscc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\..\Art\Logo256.png" Link="Resources\Logo256.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="VRCFaceTracking.Core">
+      <HintPath>3rdParty\VRCFaceTracking.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="module.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if $(ConfigurationName) == Release (powershell.exe -Command Compress-Archive -Path '$(TargetDir)\$(ProjectName).dll', '$(TargetDir)\module.json' -DestinationPath '$(TargetDir)\VirtualDesktop.VRCFaceTracking.zip' -Force)" />
+  </Target>
+
+</Project>
