@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\Logo256.png" />
+    <EmbeddedResource Include="Resources\Logo256.png" />
   </ItemGroup>
 
   <ItemGroup>

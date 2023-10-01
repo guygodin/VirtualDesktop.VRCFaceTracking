@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -59,7 +60,10 @@ namespace VirtualDesktop.FaceTracking
             var stream = GetType().Assembly.GetManifestResourceStream("VirtualDesktop.FaceTracking.Resources.Logo256.png");
             if (stream != null)
             {
-                ModuleInformation.StaticImages.Add(stream);
+                ModuleInformation.StaticImages = new List<Stream>() 
+                { 
+                    stream
+                };
             }
 
             try
