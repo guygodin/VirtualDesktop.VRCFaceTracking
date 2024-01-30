@@ -6,7 +6,7 @@ namespace VirtualDesktop.FaceTracking
     public unsafe struct FaceState
     {
         #region Constants
-        public const int ExpressionCount = 63;
+        public const int ExpressionCount = 70;
         public const int ConfidenceCount = 2;
         #endregion
 

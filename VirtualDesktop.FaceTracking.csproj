@@ -15,17 +15,17 @@
     <Copyright>Copyright © Virtual Desktop, Inc. 2014-2023</Copyright>
     <PackageProjectUrl>https://www.vrdesktop.net</PackageProjectUrl>
     <PlatformTarget>x64</PlatformTarget>
+    <FileVersion>1.1</FileVersion>
+    <AssemblyVersion>1.1</AssemblyVersion>
+    <Version>1.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="3rdParty\**" />
-    <EmbeddedResource Remove="3rdParty\**" />
-    <None Remove="3rdParty\**" />
+    <None Remove="VirtualDesktop.FaceTracking.csproj.vspscc" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Resources\Logo256.png" />
-    <None Remove="VirtualDesktop.FaceTracking.csproj.vspscc" />
+    <EmbeddedResource Include="..\..\..\Art\Logo256.png" Link="Resources\Logo256.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,12 +34,12 @@
 
   <ItemGroup>
     <Reference Include="VRCFaceTracking.Core">
-      <HintPath>3rdParty\VRCFaceTracking.Core.dll</HintPath>
+      <HintPath>..\..\..\3rdParty\VRCFaceTracking\VRCFaceTracking.Core.dll</HintPath>
     </Reference>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Logo256.png" />
+    <Folder Include="Resources\" />
   </ItemGroup>
 
   <ItemGroup>

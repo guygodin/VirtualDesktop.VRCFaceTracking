@@ -3,9 +3,9 @@
   "AuthorName": "Virtual Desktop, Inc.",
   "DllFileName": "VirtualDesktop.FaceTracking.dll",
   "DownloadUrl": "https://download.vrdesktop.net/files/VirtualDesktop.VRCFaceTracking.zip",
-  "ModuleDescription": "Provides face and eye tracking for the Quest Pro when using Virtual Desktop",
+  "ModuleDescription": "Provides face, eye and tongue tracking for the Quest Pro when using Virtual Desktop",
   "ModuleName": "Virtual Desktop",
   "ModulePageUrl": "https://www.vrdesktop.net",
-  "UsageInstructions": "Make sure to install the Virtual Desktop Streamer version 1.29 or greater before activating this module",
-  "Version": "1.0"
+  "UsageInstructions": "Make sure to install the Virtual Desktop Streamer version 1.30 or greater before activating this module",
+  "Version": "1.1"
 }

@@ -16,8 +16,8 @@ namespace VirtualDesktop.FaceTracking
     public unsafe class TrackingModule : ExtTrackingModule
     {
         #region Constants
-        private const string FaceStateMapName = "VirtualDesktop.FaceState";
-        private const string FaceStateEventName = "VirtualDesktop.FaceStateEvent";
+        private const string BodyStateMapName = "VirtualDesktop.BodyState";
+        private const string BodyStateEventName = "VirtualDesktop.BodyStateEvent";
         #endregion
 
         #region Fields
@@ -43,7 +43,7 @@ namespace VirtualDesktop.FaceTracking
                     }
                     else
                     {
-                        Logger.LogWarning("[VirtualDesktop] Tracking is not active. Make sure you are connected to your computer, a VR game or SteamVR is launched and face/eye tracking is enabled in the Streaming tab.");
+                        Logger.LogWarning("[VirtualDesktop] Tracking is not active. Make sure you are connected to your computer, a VR game or SteamVR is launched and 'Forward tracking data' is enabled in the Streaming tab.");
                     }
                 }
             }
@@ -60,27 +60,24 @@ namespace VirtualDesktop.FaceTracking
             var stream = GetType().Assembly.GetManifestResourceStream("VirtualDesktop.FaceTracking.Resources.Logo256.png");
             if (stream != null)
             {
-                ModuleInformation.StaticImages = new List<Stream>() 
-                { 
-                    stream
-                };
+                ModuleInformation.StaticImages = new List<Stream> { stream };
             }
 
             try
             {
                 var size = Marshal.SizeOf<FaceState>();
-                _mappedFile = MemoryMappedFile.OpenExisting(FaceStateMapName, MemoryMappedFileRights.ReadWrite);
+                _mappedFile = MemoryMappedFile.OpenExisting(BodyStateMapName, MemoryMappedFileRights.ReadWrite);
                 _mappedView = _mappedFile.CreateViewAccessor(0, size);
 
                 byte* ptr = null;
                 _mappedView.SafeMemoryMappedViewHandle.AcquirePointer(ref ptr);
                 _faceState = (FaceState*)ptr;
 
-                _faceStateEvent = EventWaitHandle.OpenExisting(FaceStateEventName);
+                _faceStateEvent = EventWaitHandle.OpenExisting(BodyStateEventName);
             }
             catch
             {
-                Logger.LogError("[VirtualDesktop] Failed to open MemoryMappedFile. Make sure the Virtual Desktop Streamer (v1.29 or later) is running.");
+                Logger.LogError("[VirtualDesktop] Failed to open MemoryMappedFile. Make sure the Virtual Desktop Streamer (v1.30 or later) is running.");
                 return (false, false);
             }
 
@@ -314,7 +311,8 @@ namespace VirtualDesktop.FaceTracking
 
             // Tongue Expression Set   
             // Future placeholder
-            unifiedExpressions[(int)UnifiedExpressions.TongueOut].Weight = 0f;
+            unifiedExpressions[(int)UnifiedExpressions.TongueOut].Weight = expressions[(int)Expressions.TongueOut];
+            unifiedExpressions[(int)UnifiedExpressions.TongueCurlUp].Weight = expressions[(int)Expressions.TongueTipAlveolar];
         }
         #endregion
     }
