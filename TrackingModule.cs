@@ -27,6 +27,7 @@ namespace VirtualDesktop.FaceTracking
         private MemoryMappedFile _mappedFile;
         private MemoryMappedViewAccessor _mappedView;
         private FaceState* _faceState;
+        private bool _eyeAvailable, _expressionAvailable;
         private EventWaitHandle _faceStateEvent;
         private bool? _isTracking = null;
         #endregion
@@ -84,7 +85,8 @@ namespace VirtualDesktop.FaceTracking
                 return (false, false);
             }
 
-            return (true, true);
+            (_eyeAvailable, _expressionAvailable) = (eyeAvailable, expressionAvailable);
+            return (_eyeAvailable, _expressionAvailable);
         }
 
         public override void Update()
@@ -145,7 +147,7 @@ namespace VirtualDesktop.FaceTracking
             {
                 var expressions = faceState->ExpressionWeights;
 
-                if (faceState->LeftEyeIsValid || faceState->RightEyeIsValid)
+                if (_eyeAvailable && faceState->LeftEyeIsValid || faceState->RightEyeIsValid)
                 {                    
                     var leftEyePose = faceState->LeftEyePose;
                     var rightEyePose = faceState->RightEyePose;
@@ -153,13 +155,13 @@ namespace VirtualDesktop.FaceTracking
                     isTracking = true;
                 }
 
-                if (faceState->IsEyeFollowingBlendshapesValid)
+                if (_eyeAvailable && faceState->IsEyeFollowingBlendshapesValid)
                 {
                     UpdateEyeExpressions(UnifiedTracking.Data.Shapes, expressions);
                     isTracking = true;
                 }
 
-                if (faceState->FaceIsValid)
+                if (_expressionAvailable && faceState->FaceIsValid)
                 {
                     UpdateMouthExpressions(UnifiedTracking.Data.Shapes, expressions);
                     isTracking = true;
