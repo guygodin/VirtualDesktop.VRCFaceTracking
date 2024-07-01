@@ -21,11 +21,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Logo256.png" />
     <None Remove="VirtualDesktop.FaceTracking.csproj.vspscc" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\..\..\Art\Logo256.png" Link="Resources\Logo256.png" />
+    <EmbeddedResource Include="Resources\Logo256.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,10 +37,6 @@
     <Reference Include="VRCFaceTracking.Core">
       <HintPath>..\..\..\3rdParty\VRCFaceTracking\VRCFaceTracking.Core.dll</HintPath>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Resources\" />
   </ItemGroup>
 
   <ItemGroup>
