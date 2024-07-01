@@ -21,7 +21,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\Logo256.png" />
     <None Remove="VirtualDesktop.FaceTracking.csproj.vspscc" />
   </ItemGroup>
 
