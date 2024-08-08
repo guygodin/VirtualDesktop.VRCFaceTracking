@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.MemoryMappedFiles;
+using System.Linq.Expressions;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using VRCFaceTracking;
@@ -10,6 +12,7 @@ using VRCFaceTracking.Core.Library;
 using VRCFaceTracking.Core.Params.Data;
 using VRCFaceTracking.Core.Params.Expressions;
 using VRCFaceTracking.Core.Types;
+using Vector2 = VRCFaceTracking.Core.Types.Vector2;
 
 namespace VirtualDesktop.FaceTracking
 {
@@ -24,6 +27,7 @@ namespace VirtualDesktop.FaceTracking
         private MemoryMappedFile _mappedFile;
         private MemoryMappedViewAccessor _mappedView;
         private FaceState* _faceState;
+        private bool _eyeAvailable, _expressionAvailable;
         private EventWaitHandle _faceStateEvent;
         private bool? _isTracking = null;
         #endregion
@@ -81,7 +85,8 @@ namespace VirtualDesktop.FaceTracking
                 return (false, false);
             }
 
-            return (true, true);
+            (_eyeAvailable, _expressionAvailable) = (eyeAvailable, expressionAvailable);
+            return (_eyeAvailable, _expressionAvailable);
         }
 
         public override void Update()
@@ -142,7 +147,7 @@ namespace VirtualDesktop.FaceTracking
             {
                 var expressions = faceState->ExpressionWeights;
 
-                if (faceState->LeftEyeIsValid || faceState->RightEyeIsValid)
+                if (_eyeAvailable && faceState->LeftEyeIsValid || faceState->RightEyeIsValid)
                 {                    
                     var leftEyePose = faceState->LeftEyePose;
                     var rightEyePose = faceState->RightEyePose;
@@ -150,60 +155,38 @@ namespace VirtualDesktop.FaceTracking
                     isTracking = true;
                 }
 
-                if (faceState->IsEyeFollowingBlendshapesValid)
+                if (_eyeAvailable && faceState->IsEyeFollowingBlendshapesValid)
                 {
                     UpdateEyeExpressions(UnifiedTracking.Data.Shapes, expressions);
                     isTracking = true;
                 }
 
-                if (faceState->FaceIsValid)
+                if (_expressionAvailable && faceState->FaceIsValid)
                 {
                     UpdateMouthExpressions(UnifiedTracking.Data.Shapes, expressions);
                     isTracking = true;
                 }
             }
-
             IsTracking = isTracking;
         }
 
         private void UpdateEyeData(UnifiedEyeData eye, float* expressions, Quaternion orientationL, Quaternion orientationR)
         {
-            // Eye Openness parsing
-            eye.Left.Openness = 1.0f - Math.Max(0, Math.Min(1, expressions[(int)Expressions.EyesClosedL] + expressions[(int)Expressions.EyesClosedL] * expressions[(int)Expressions.LidTightenerL]));
-            eye.Right.Openness = 1.0f - (float)Math.Max(0, Math.Min(1, expressions[(int)Expressions.EyesClosedR] + expressions[(int)Expressions.EyesClosedR] * expressions[(int)Expressions.LidTightenerR]));
+            #region Eye Openness parsing
 
-            // Eye Gaze parsing
-            double qx = orientationL.X;
-            double qy = orientationL.Y;
-            double qz = orientationL.Z;
-            double qw = orientationL.W;
+            eye.Left.Openness = 
+                1.0f - (float)Math.Max(0, Math.Min(1, expressions[(int)Expressions.EyesClosedL]
+                + expressions[(int)Expressions.CheekRaiserL] * expressions[(int)Expressions.LidTightenerL]));
+            eye.Right.Openness =
+                1.0f - (float)Math.Max(0, Math.Min(1, expressions[(int)Expressions.EyesClosedR]
+                + expressions[(int)Expressions.CheekRaiserR] * expressions[(int)Expressions.LidTightenerR]));
 
-            var yaw = Math.Atan2(2.0 * (qy * qz + qw * qx), qw * qw - qx * qx - qy * qy + qz * qz);
-            var pitch = Math.Asin(-2.0 * (qx * qz - qw * qy));
+            #endregion
 
-            var pitchL = (180.0 / Math.PI) * pitch; // from radians
-            var yawL = (180.0 / Math.PI) * yaw;
+            #region Eye Data to UnifiedEye
 
-            qx = orientationL.X;
-            qy = orientationL.Y;
-            qz = orientationL.Z;
-            qw = orientationL.W;
-            yaw = Math.Atan2(2.0 * (qy * qz + qw * qx), qw * qw - qx * qx - qy * qy + qz * qz);
-            pitch = Math.Asin(-2.0 * (qx * qz - qw * qy));
-
-            var pitchR = (180.0 / Math.PI) * pitch; // from radians
-            var yawR = (180.0 / Math.PI) * yaw;
-
-            // Eye Data to UnifiedEye
-            var radianConst = 0.0174533f;
-
-            var pitchRmod = (float)(Math.Abs(pitchR) + 4f * Math.Pow(Math.Abs(pitchR) / 30f, 30f)); // curves the tail end to better accomodate actual eye pos.
-            var pitchLmod = (float)(Math.Abs(pitchL) + 4f * Math.Pow(Math.Abs(pitchL) / 30f, 30f));
-            var yawRmod = (float)(Math.Abs(yawR) + 6f * Math.Pow(Math.Abs(yawR) / 27f, 18f)); // curves the tail end to better accomodate actual eye pos.
-            var yawLmod = (float)(Math.Abs(yawL) + 6f * Math.Pow(Math.Abs(yawL) / 27f, 18f));
-
-            eye.Right.Gaze = new Vector2(pitchR < 0 ? pitchRmod * radianConst : -1 * pitchRmod * radianConst, yawR < 0 ? -1 * yawRmod * radianConst : (float)yawR * radianConst);
-            eye.Left.Gaze = new Vector2(pitchL < 0 ? pitchLmod * radianConst : -1 * pitchLmod * radianConst, yawL < 0 ? -1 * yawLmod * radianConst : (float)yawL * radianConst);
+            eye.Right.Gaze = orientationR.Cartesian();
+            eye.Left.Gaze = orientationL.Cartesian();
 
             // Eye dilation code, automated process maybe?
             eye.Left.PupilDiameter_MM = 5f;
@@ -212,6 +195,8 @@ namespace VirtualDesktop.FaceTracking
             // Force the normalization values of Dilation to fit avg. pupil values.
             eye._minDilation = 0;
             eye._maxDilation = 10;
+
+            #endregion
         }
 
         private void UpdateEyeExpressions(UnifiedExpressionShape[] unifiedExpressions, float* expressions)
