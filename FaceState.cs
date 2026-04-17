@@ -15,7 +15,8 @@ namespace VirtualDesktop.FaceTracking
         #endregion
 
         #region Fields
-        public byte FaceFlags;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool FaceIsValid;
         [MarshalAs(UnmanagedType.I1)]
         public bool IsEyeFollowingBlendshapesValid;
         public fixed float ExpressionWeights[ExpressionCount];
