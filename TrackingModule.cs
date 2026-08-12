@@ -147,13 +147,13 @@ namespace VirtualDesktop.FaceTracking
                 {                    
                     var leftEyePose = faceState->LeftEyePose;
                     var rightEyePose = faceState->RightEyePose;
-                    UpdateEyeData(UnifiedTracking.Data.Eye, expressions, leftEyePose.Orientation, rightEyePose.Orientation);
+                    UpdateEyeData(UnifiedTracking.Data.Eye, leftEyePose.Orientation, rightEyePose.Orientation);
                     isTracking = true;
                 }
 
                 if (_eyeAvailable && faceState->IsEyeFollowingBlendshapesValid)
                 {
-                    UpdateEyeExpressions(UnifiedTracking.Data.Shapes, expressions);
+                    UpdateEyeExpressions(UnifiedTracking.Data.Eye, UnifiedTracking.Data.Shapes, expressions);
                     isTracking = true;
                 }
 
@@ -166,19 +166,8 @@ namespace VirtualDesktop.FaceTracking
             IsTracking = isTracking;
         }
 
-        private void UpdateEyeData(UnifiedEyeData eye, float* expressions, Quaternion orientationL, Quaternion orientationR)
+        private void UpdateEyeData(UnifiedEyeData eye, Quaternion orientationL, Quaternion orientationR)
         {
-            #region Eye Openness parsing
-
-            eye.Left.Openness = 
-                1.0f - (float)Math.Max(0, Math.Min(1, expressions[(int)Expressions.EyesClosedL]
-                + expressions[(int)Expressions.CheekRaiserL] * expressions[(int)Expressions.LidTightenerL]));
-            eye.Right.Openness =
-                1.0f - (float)Math.Max(0, Math.Min(1, expressions[(int)Expressions.EyesClosedR]
-                + expressions[(int)Expressions.CheekRaiserR] * expressions[(int)Expressions.LidTightenerR]));
-
-            #endregion
-
             #region Eye Data to UnifiedEye
 
             eye.Right.Gaze = orientationR.Cartesian();
@@ -195,8 +184,23 @@ namespace VirtualDesktop.FaceTracking
             #endregion
         }
 
-        private void UpdateEyeExpressions(UnifiedExpressionShape[] unifiedExpressions, float* expressions)
+        private void UpdateEyeExpressions(UnifiedEyeData eye, UnifiedExpressionShape[] unifiedExpressions, float* expressions)
         {
+            #region Eye Openness parsing
+
+            eye.Left.Openness = 1f - Math.Clamp
+            (
+                expressions[(int)Expressions.EyesClosedL] + expressions[(int)Expressions.EyesClosedL] * expressions[(int)Expressions.LidTightenerL],
+                0f, 1f
+            );
+            eye.Right.Openness = 1f - Math.Clamp
+            (
+                expressions[(int)Expressions.EyesClosedR] + expressions[(int)Expressions.EyesClosedR] * expressions[(int)Expressions.LidTightenerR],
+                0f, 1f
+            );
+
+            #endregion
+
             // Eye Expressions Set
             unifiedExpressions[(int)UnifiedExpressions.EyeWideLeft].Weight = expressions[(int)Expressions.UpperLidRaiserL];
             unifiedExpressions[(int)UnifiedExpressions.EyeWideRight].Weight = expressions[(int)Expressions.UpperLidRaiserR];
